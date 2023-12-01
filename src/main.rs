@@ -1,4 +1,5 @@
 use rand_mt::{Mt, Mt19937GenRand32};
+use std::cmp::Ordering;
 
 static M: u32 = 4;
 static N: u32 = 8;
@@ -8,27 +9,33 @@ enum State {
     Continue,
     Break,
 }
+
 #[inline]
 fn random_number(generator: &mut Mt19937GenRand32, max: &u32) -> u32 {
     generator.next_u32() % max
 }
 
-fn experiment(i: &u32, a: &mut Vec<u32>, b: &mut Vec<u32>, c: &mut Vec<u32>,
-              d: &mut Vec<u32>, e: &mut Vec<u32>) {
+fn experiment(i: &u32, rng: &mut Mt19937GenRand32, a: &mut Vec<u32>, b: &mut Vec<u32>,
+              c: &mut Vec<u32>, d: &mut Vec<u32>, e: &mut Vec<u32>) {
     let mut boxes: Vec<u32> = vec![0; M as usize];
 
-
-
+    while experiment_check(&boxes) {
+        let index = random_number(rng, &M) as usize;
+        boxes[index] += 1;
+        // println!("again");
+    }
+    // println!("ok");
 
 }
 
-fn stop_experiment_case(boxes: &Vec<u32>) -> State {
+fn experiment_check(boxes: &Vec<u32>) -> bool {
     for n in boxes.iter() {
-        if *n != 2u32 {
-            return State::Continue;
+        match n.cmp(&2) {
+            Ordering::Less => return true,
+            _ => {}
         }
     }
-    return State::Break;
+    return false;
 }
 
 fn main() {
@@ -42,7 +49,7 @@ fn main() {
     let mut e = vec![0; K as usize];
 
     for i in 0..K {
-        experiment(&i, &mut a, &mut b, &mut c, &mut d, &mut e);
+        experiment(&i, &mut rng, &mut a, &mut b, &mut c, &mut d, &mut e);
     }
 
     println!("{}", random_number(&mut rng, &M));
