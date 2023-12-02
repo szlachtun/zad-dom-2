@@ -1,5 +1,9 @@
 use rand_mt::{Mt19937GenRand64, Mt64};
 use std::cmp::Ordering;
+use std::path::Path;
+use std::env;
+use std::fs::File;
+use std::io::Write;
 use std::iter::Iterator;
 
 
@@ -64,11 +68,6 @@ fn experiment(box_count: &u64, gen: &mut Mt19937GenRand64, a: &mut u64,
             *d = d_result;
             *e = e_result;
 
-            // a[*i] = a_result;
-            // b[*i] = b_result;
-            // c[*i] = c_result;
-            // d[*i] = d_result;
-            // e[*i] = e_result;
             break;
         }
     }
@@ -134,35 +133,24 @@ fn main() {
     let mut d: [[u64; 1000]; 50] = [[0; 1000]; 50];
     let mut e: [[u64; 1000]; 50] = [[0; 1000]; 50];
 
-    // dupa(&mut a[0]);
-    // println!("{}", a[0]);
+    let result_directory = Path::new("/home/romka/");
+    let result_filename = result_directory.join("result");
+    let mut file = File::create(result_filename).unwrap();
 
     for i in 0..repeat_count {
-        thread_runner(&i, &n_list, &mut a[i], &mut b[i], &mut c[i], &mut d[i], &mut e[i]);
-        // println!("{}; {}; {}; {}; {};", a[i], b[i], c[i], d[i], e[i])
+        thread_runner(&i, &n_list, &mut a[i], &mut b[i], &mut c[i], &mut d[i], &mut e[i], &mut file);
     }
-
-    // println!("{}", a_ref); println!("{}", a[0]);
-
-    // for i in 0..repeat_count {
-    //     for box_count in &n_list {
-    //         print!("{}-{}\t:", i, box_count);
-    //         experiment(&(i as usize), &box_count, &mut gen, &mut a, &mut b, &mut c, &mut d, &mut e);
-    //     }
-    // }
 }
 
 fn thread_runner(repeat: &usize, n_list: &Vec<u64>, a: &mut [u64; 1000], b: &mut [u64; 1000],
-                 c: &mut [u64; 1000], d: &mut [u64; 1000], e: &mut [u64; 1000]) {
+                 c: &mut [u64; 1000], d: &mut [u64; 1000], e: &mut [u64; 1000], file: &mut File) {
     let mut gen = Mt64::new(rand::random::<u64>());
 
     for (i, &box_count) in n_list.iter().enumerate() {
-        experiment( &box_count, &mut gen, &mut a[i], &mut b[i], &mut c[i],
+        experiment(&box_count, &mut gen, &mut a[i], &mut b[i], &mut c[i],
                    &mut d[i], &mut e[i]);
-        println!("{}-{}\t; {}; {}; {}; {}; {};", repeat, box_count, a[i], b[i], c[i], d[i], e[i])
-    }
-}
+        println!("{};{};{};{};{};{};{}", repeat, box_count, a[i], b[i], c[i], d[i], e[i]);
 
-fn dupa(a_ref: &mut u64) {
-    *a_ref = 1;
+        writeln!(file, "{};{};{};{};{};{};{}", repeat, box_count, a[i], b[i], c[i], d[i], e[i]).expect("TODO: panic message");
+    }
 }
