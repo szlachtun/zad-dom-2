@@ -1,11 +1,10 @@
 use rand_mt::{Mt19937GenRand64, Mt64};
 use std::cmp::Ordering;
 use std::path::Path;
-use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::iter::Iterator;
-
+ 
 
 #[inline(always)]
 fn random_number(generator: &mut Mt19937GenRand64, max: u64) -> usize {
@@ -62,6 +61,12 @@ fn experiment(box_count: &u64, gen: &mut Mt19937GenRand64, a: &mut u64,
         }
 
         if a_worked && b_worked && c_worked && d_worked && e_worked {
+
+            for cur_box in boxes.iter() {
+                print!("{}; ", cur_box);
+            }
+            println!();
+
             *a = a_result;
             *b = b_result;
             *c = c_result;
@@ -123,9 +128,8 @@ fn d_check(boxes: &Vec<u64>) -> bool {
 }
 
 fn main() {
-    let repeat_count: usize = 1;
-    let n_list: Vec<u64> = (1..100).map(|x| x * 1000).collect::<Vec<u64>>();
-    // let mut gen = Mt64::new(rand::random::<u64>());
+    let repeat_count: usize = 51;
+    let n_list: Vec<u64> = (1..101).map(|x| x * 1000).collect::<Vec<u64>>();
 
     let mut a: [[u64; 1000]; 50] = [[0; 1000]; 50];
     let mut b: [[u64; 1000]; 50] = [[0; 1000]; 50];
@@ -137,7 +141,8 @@ fn main() {
     let result_filename = result_directory.join("result");
     let mut file = File::create(result_filename).unwrap();
 
-    for i in 0..repeat_count {
+    for i in 1..repeat_count {
+        // Nieudana próba zrobienia wielowątkowości podczas obliczenia niezależnych powtórzeń
         thread_runner(&i, &n_list, &mut a[i], &mut b[i], &mut c[i], &mut d[i], &mut e[i], &mut file);
     }
 }
@@ -154,3 +159,4 @@ fn thread_runner(repeat: &usize, n_list: &Vec<u64>, a: &mut [u64; 1000], b: &mut
         writeln!(file, "{};{};{};{};{};{};{}", repeat, box_count, a[i], b[i], c[i], d[i], e[i]).expect("TODO: panic message");
     }
 }
+
